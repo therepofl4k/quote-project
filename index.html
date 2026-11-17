@@ -1,34 +1,1641 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Gen</title>
+    <title>Lumina Quote — Modern Editorial Quote Generator</title>
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://www.google.com/s2/favicons?domain=web.archive.org">
+    <!-- Font Awesome 6.6.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ==========================================
+           THEME DESIGN TOKENS (Dark, Light, Sepia)
+           ========================================== */
+        :root[data-theme="dark"] {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #111827;
+            --blob-1: rgba(99, 102, 241, 0.28);
+            --blob-2: rgba(236, 72, 153, 0.22);
+            --blob-3: rgba(14, 165, 233, 0.22);
+            --card-bg: rgba(17, 24, 39, 0.62);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #818cf8;
+            --accent-hover: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --btn-surface: rgba(255, 255, 255, 0.06);
+            --btn-surface-hover: rgba(255, 255, 255, 0.13);
+            --btn-border: rgba(255, 255, 255, 0.1);
+            --watermark: rgba(255, 255, 255, 0.04);
+            --drawer-bg: rgba(15, 23, 42, 0.95);
+        }
+
+        :root[data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #eef2ff;
+            --blob-1: rgba(99, 102, 241, 0.20);
+            --blob-2: rgba(244, 114, 182, 0.18);
+            --blob-3: rgba(56, 189, 248, 0.18);
+            --card-bg: rgba(255, 255, 255, 0.72);
+            --card-border: rgba(15, 23, 42, 0.08);
+            --card-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.10), 0 0 1px 1px rgba(15, 23, 42, 0.05);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-glow: rgba(79, 70, 229, 0.25);
+            --btn-surface: rgba(15, 23, 42, 0.04);
+            --btn-surface-hover: rgba(15, 23, 42, 0.09);
+            --btn-border: rgba(15, 23, 42, 0.09);
+            --watermark: rgba(15, 23, 42, 0.04);
+            --drawer-bg: rgba(255, 255, 255, 0.96);
+        }
+
+        :root[data-theme="sepia"] {
+            --bg-primary: #f4efe6;
+            --bg-secondary: #ebe3d5;
+            --blob-1: rgba(217, 119, 6, 0.16);
+            --blob-2: rgba(180, 83, 9, 0.14);
+            --blob-3: rgba(120, 53, 15, 0.10);
+            --card-bg: rgba(251, 248, 243, 0.78);
+            --card-border: rgba(120, 53, 15, 0.12);
+            --card-shadow: 0 25px 50px -12px rgba(69, 26, 3, 0.12), 0 0 1px 1px rgba(120, 53, 15, 0.08);
+            --text-primary: #292524;
+            --text-secondary: #57534e;
+            --text-muted: #78716c;
+            --accent: #b45309;
+            --accent-hover: #92400e;
+            --accent-glow: rgba(180, 83, 9, 0.25);
+            --btn-surface: rgba(120, 53, 15, 0.06);
+            --btn-surface-hover: rgba(120, 53, 15, 0.12);
+            --btn-border: rgba(120, 53, 15, 0.12);
+            --watermark: rgba(120, 53, 15, 0.05);
+            --drawer-bg: rgba(247, 242, 234, 0.97);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s ease;
+            overflow-x: hidden;
+        }
+
+        /* ==========================================
+           AMBIENT ANIMATED BACKGROUND & GRAIN
+           ========================================== */
+        .ambient-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(90px);
+            transition: background 0.6s ease;
+            animation: floatBlob 18s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 34rem;
+            height: 34rem;
+            top: -10%;
+            left: -8%;
+            background: var(--blob-1);
+        }
+
+        .blob-2 {
+            width: 30rem;
+            height: 30rem;
+            bottom: -12%;
+            right: -6%;
+            background: var(--blob-2);
+            animation-delay: -6s;
+            animation-duration: 22s;
+        }
+
+        .blob-3 {
+            width: 26rem;
+            height: 26rem;
+            top: 35%;
+            left: 55%;
+            background: var(--blob-3);
+            animation-delay: -11s;
+            animation-duration: 25s;
+        }
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(35px, -25px) scale(1.07); }
+            100% { transform: translate(-25px, 30px) scale(0.95); }
+        }
+
+        /* Subtle SVG noise overlay for editorial texture */
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* ==========================================
+           GLASSMORPHIC QUOTE CARD & TYPOGRAPHY
+           ========================================== */
+        .quote-container {
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+        }
+
+        .quote-watermark {
+            position: absolute;
+            top: 1.25rem;
+            left: 2rem;
+            font-size: 7.5rem;
+            line-height: 1;
+            color: var(--watermark);
+            pointer-events: none;
+            user-select: none;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Quote Text Styling & Responsive Sizing */
+        .quote-text-wrapper {
+            transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .quote-fade-out {
+            opacity: 0;
+            transform: translateY(10px) scale(0.99);
+        }
+
+        .quote-fade-in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        #quote {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.65rem, 3.5vw, 2.65rem);
+            line-height: 1.38;
+            letter-spacing: -0.01em;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: font-size 0.25s ease, color 0.3s ease;
+        }
+
+        /* Preserving original .long-quote class logic for quotes > 120 chars */
+        #quote.long-quote {
+            font-size: clamp(1.35rem, 2.6vw, 2rem);
+            line-height: 1.45;
+        }
+
+        /* Interactive Buttons */
+        .glass-btn {
+            background: var(--btn-surface);
+            border: 1px solid var(--btn-border);
+            color: var(--text-primary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-btn:hover:not(:disabled) {
+            background: var(--btn-surface-hover);
+            transform: translateY(-2px);
+        }
+
+        .glass-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .glass-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px var(--accent-glow);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.08);
+            box-shadow: 0 14px 30px -5px var(--accent-glow);
+        }
+
+        .primary-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Speaking pulse animation */
+        @keyframes pulseWave {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.18); }
+        }
+
+        .speaking-active {
+            color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            animation: pulseWave 1.2s ease-in-out infinite;
+        }
+
+        /* Heart pop animation */
+        @keyframes heartPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        .heart-animate {
+            animation: heartPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Custom Scrollbar for Favorites Drawer */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--btn-border);
+            border-radius: 9999px;
+        }
+    </style>
 </head>
-<body>
-    <div class="quote-container" id="quote-container">
-        <!-- Quote -->
-         <div class="quote-text">
-            <i class="fas fa-quote-left"></i>
-            <span id="quote"></span>
-         </div>
-         <!-- Author -->
-          <div class="quote-author">
-            <span id="author"></span>
-          </div>
-          <!-- Button -->
-           <div class="button-container">
-            <button class="X-button" id="X" title="Tweet This!">
-                <i class="fab fa-x-twitter"></i>
-            </button>
-            <button id="new-quote">New Quote</button>
-           </div>
+
+<body class="relative flex flex-col justify-between min-h-screen selection:bg-indigo-500 selection:text-white">
+
+    <!-- Ambient Background Blobs & Noise -->
+    <div class="ambient-canvas" aria-hidden="true">
+        <div class="ambient-blob blob-1"></div>
+        <div class="ambient-blob blob-2"></div>
+        <div class="ambient-blob blob-3"></div>
     </div>
-    <!-- script -->
-     <script src="quotes.js"></script>
-    <script src="script.js"></script>
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <!-- ==========================================
+         TOP NAVIGATION BAR
+         ========================================== -->
+    <header class="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-2 flex items-center justify-between gap-3">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center primary-btn shadow-md">
+                <i class="fas fa-feather-pointed text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-serif font-bold text-lg sm:text-xl tracking-tight leading-none">Lumina</h1>
+                <p class="text-xs font-medium mt-0.5" style="color: var(--text-secondary);">Daily Wisdom &amp; Perspectives</p>
+            </div>
+        </div>
+
+        <!-- Right Controls: Theme Switcher & Saved Favorites Drawer Trigger -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Theme Pill Switcher -->
+            <div class="glass-btn rounded-xl p-1 flex items-center gap-1" role="group" aria-label="Theme Switcher">
+                <button type="button" data-theme-btn="light" class="theme-btn px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all" title="Light Mode">
+                    <i class="fas fa-sun"></i>
+                    <span class="hidden md:inline">Light</span>
+                </button>
+                <button type="button" data-theme-btn="dark" class="theme-btn px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all" title="Dark Mode">
+                    <i class="fas fa-moon"></i>
+                    <span class="hidden md:inline">Dark</span>
+                </button>
+                <button type="button" data-theme-btn="sepia" class="theme-btn px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all" title="Warm Sepia Mode">
+                    <i class="fas fa-book-open"></i>
+                    <span class="hidden md:inline">Sepia</span>
+                </button>
+            </div>
+
+            <!-- Open Saved Quotes Drawer Button -->
+            <button type="button" id="open-favorites-btn" class="glass-btn rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2" title="View Saved Quotes">
+                <i class="fas fa-bookmark text-rose-500"></i>
+                <span class="hidden sm:inline">Saved</span>
+                <span id="favorites-count-badge" class="px-1.5 py-0.5 text-xs rounded-full bg-rose-500/20 text-rose-400 font-bold">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN QUOTE GENERATOR STAGE
+         ========================================== -->
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 w-full max-w-4xl mx-auto">
+        
+        <!-- Filter / Search Bar Pill -->
+        <div class="w-full max-w-2xl mb-5 flex flex-wrap items-center justify-between gap-2 px-1">
+            <div class="flex items-center gap-2 text-xs font-medium" style="color: var(--text-secondary);">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-btn">
+                    <i class="fas fa-sparkles text-amber-400"></i>
+                    <span id="quote-counter-badge">139 Classic Quotes</span>
+                </span>
+                <button type="button" id="clear-filter-btn" class="hidden items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-all">
+                    <span id="active-filter-label">Author</span>
+                    <i class="fas fa-xmark ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Quick Author Select Dropdown -->
+            <div class="relative">
+                <select id="author-filter-select" aria-label="Filter quotes by author" class="glass-btn rounded-full px-3.5 py-1 text-xs font-medium outline-none cursor-pointer pr-7 appearance-none" style="background-color: var(--card-bg); color: var(--text-secondary);">
+                    <option value="ALL">All Authors (139)</option>
+                </select>
+                <i class="fas fa-chevron-down text-[10px] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style="color: var(--text-secondary);"></i>
+            </div>
+        </div>
+
+        <!-- Main Frosted Glass Quote Container (Preserves #quote-container ID) -->
+        <div class="quote-container w-full rounded-3xl p-6 sm:p-10 md:p-12 overflow-hidden" id="quote-container">
+            
+            <!-- Decorative Oversized Quotation Mark Watermark -->
+            <div class="quote-watermark" aria-hidden="true">“</div>
+
+            <!-- Top Meta Row inside Card -->
+            <div class="relative z-10 flex items-center justify-between mb-6">
+                <span class="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-semibold" style="color: var(--text-muted);">
+                    <i class="fas fa-quote-left text-sm" style="color: var(--accent);"></i>
+                    <span id="quote-category-tag">Timeless Reflection</span>
+                </span>
+
+                <span id="quote-length-badge" class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--btn-surface); color: var(--text-muted);">
+                    Short Read
+                </span>
+            </div>
+
+            <!-- Quote & Author Animated Wrapper -->
+            <div id="quote-content-box" class="quote-text-wrapper quote-fade-in relative z-10 my-2 sm:my-4 text-left sm:text-center">
+                <!-- Quote Text (Preserves .quote-text and #quote) -->
+                <div class="quote-text px-1 sm:px-4">
+                    <span id="quote"></span>
+                </div>
+
+                <!-- Author Attribution (Preserves .quote-author and #author) -->
+                <div class="quote-author mt-6 sm:mt-8 flex items-center justify-start sm:justify-center">
+                    <button type="button" id="author-pill-btn" class="group inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-btn text-sm sm:text-base font-medium transition-all" title="Click to filter quotes by this author">
+                        <span class="w-4 h-[1.5px] rounded-full transition-all group-hover:w-6" style="background-color: var(--accent);"></span>
+                        <span id="author" class="tracking-wide"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="w-full h-[1px] my-6 sm:my-8" style="background: var(--card-border);"></div>
+
+            <!-- Action Toolbar (Preserves .button-container, #X, and #new-quote) -->
+            <div class="button-container relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                
+                <!-- Secondary Utility Actions (Left group) -->
+                <div class="flex items-center justify-center sm:justify-start gap-2.5">
+                    <!-- Previous Quote Button -->
+                    <button type="button" id="prev-quote-btn" class="glass-btn w-11 h-11 rounded-xl flex items-center justify-center text-base" title="Previous Quote (Left Arrow)" disabled>
+                        <i class="fas fa-arrow-rotate-left"></i>
+                    </button>
+
+                    <!-- Copy Quote Button -->
+                    <button type="button" id="copy-quote-btn" class="glass-btn w-11 h-11 rounded-xl flex items-center justify-center text-base" title="Copy Quote (C)">
+                        <i id="copy-icon" class="far fa-copy"></i>
+                    </button>
+
+                    <!-- Speak Quote (Web Speech API) Button -->
+                    <button type="button" id="speak-quote-btn" class="glass-btn w-11 h-11 rounded-xl flex items-center justify-center text-base" title="Listen to Quote (S)">
+                        <i id="speak-icon" class="fas fa-volume-high"></i>
+                    </button>
+
+                    <!-- Favorite / Save Quote Button -->
+                    <button type="button" id="favorite-quote-btn" class="glass-btn w-11 h-11 rounded-xl flex items-center justify-center text-base" title="Save to Favorites (F)">
+                        <i id="favorite-icon" class="far fa-heart"></i>
+                    </button>
+
+                    <!-- Post on X / Twitter Button (Preserves .X-button and #X) -->
+                    <button type="button" class="X-button glass-btn w-11 h-11 rounded-xl flex items-center justify-center text-base" id="X" title="Post this quote on X!">
+                        <i class="fab fa-x-twitter"></i>
+                    </button>
+                </div>
+
+                <!-- Primary Action: New Quote Button (Preserves #new-quote) -->
+                <button type="button" id="new-quote" class="primary-btn rounded-xl px-6 py-3 font-semibold text-sm sm:text-base flex items-center justify-center gap-3 cursor-pointer border-none">
+                    <i id="shuffle-icon" class="fas fa-wand-magic-sparkles transition-transform duration-300"></i>
+                    <span>New Quote</span>
+                    <kbd class="hidden md:inline-block text-[11px] font-mono bg-white/20 px-2 py-0.5 rounded text-white/90">Space</kbd>
+                </button>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Legend -->
+        <div class="mt-6 hidden sm:flex items-center justify-center gap-5 text-xs" style="color: var(--text-muted);">
+            <span class="flex items-center gap-1.5">
+                <kbd class="px-2 py-0.5 rounded glass-btn font-mono text-[11px]">Space</kbd> Next Quote
+            </span>
+            <span class="flex items-center gap-1.5">
+                <kbd class="px-2 py-0.5 rounded glass-btn font-mono text-[11px]">←</kbd> Previous
+            </span>
+            <span class="flex items-center gap-1.5">
+                <kbd class="px-2 py-0.5 rounded glass-btn font-mono text-[11px]">C</kbd> Copy
+            </span>
+            <span class="flex items-center gap-1.5">
+                <kbd class="px-2 py-0.5 rounded glass-btn font-mono text-[11px]">F</kbd> Favorite
+            </span>
+            <span class="flex items-center gap-1.5">
+                <kbd class="px-2 py-0.5 rounded glass-btn font-mono text-[11px]">S</kbd> Listen
+            </span>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         SLIDE-OVER FAVORITES DRAWER
+         ========================================== -->
+    <div id="favorites-backdrop" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <aside id="favorites-drawer" aria-label="Saved Quotes Drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md translate-x-full transition-transform duration-300 ease-out flex flex-col border-l" style="background: var(--drawer-bg); border-color: var(--card-border); backdrop-filter: blur(24px);">
+        <!-- Drawer Header -->
+        <div class="p-5 sm:p-6 border-b flex items-center justify-between" style="border-color: var(--card-border);">
+            <div class="flex items-center gap-2.5">
+                <i class="fas fa-heart text-rose-500 text-lg"></i>
+                <h2 class="font-serif font-bold text-lg sm:text-xl">Saved Quotes</h2>
+            </div>
+            <button type="button" id="close-favorites-btn" class="glass-btn w-9 h-9 rounded-lg flex items-center justify-center text-sm" title="Close Drawer">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Body (Saved Quotes List) -->
+        <div id="favorites-list" class="flex-1 overflow-y-auto custom-scroll p-5 sm:p-6 space-y-4">
+            <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-4 sm:p-5 border-t flex items-center justify-between text-xs" style="border-color: var(--card-border); color: var(--text-muted);">
+            <span id="drawer-footer-count">0 saved quotes</span>
+            <button type="button" id="clear-all-favorites-btn" class="text-rose-400 hover:text-rose-300 font-semibold transition-colors hidden">
+                Clear All
+            </button>
+        </div>
+    </aside>
+
+    <!-- ==========================================
+         TOAST NOTIFICATION
+         ========================================== -->
+    <div id="toast-notification" role="status" aria-live="polite" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+        <div class="px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2.5 text-xs sm:text-sm font-semibold border" style="background: var(--drawer-bg); border-color: var(--card-border); color: var(--text-primary);">
+            <i id="toast-icon" class="fas fa-circle-check text-emerald-400"></i>
+            <span id="toast-message">Copied to clipboard!</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         APPLICATION SCRIPTS (quotes.js + script.js)
+         ========================================== -->
+    <script>
+        /* ------------------------------------------
+           1. FULL LOCAL QUOTES DATASET (from quotes.js)
+           ------------------------------------------ */
+        const localQuotes = [
+            {
+                text: 'Genius is one percent inspiration and ninety-nine percent perspiration.',
+                author: 'Thomas Edison',
+            },
+            {
+                text: 'You can observe a lot just by watching.',
+                author: 'Yogi Berra',
+            },
+            {
+                text: 'A house divided against itself cannot stand.',
+                author: 'Abraham Lincoln',
+            },
+            {
+                text: 'Difficulties increase the nearer we get to the goal.',
+                author: 'Johann Wolfgang von Goethe',
+            },
+            {
+                text: 'Fate is in your hands and no one elses',
+                author: 'Byron Pulsifer',
+            },
+            {
+                text: 'Be the chief but never the lord.',
+                author: 'Lao Tzu',
+            },
+            {
+                text: 'Nothing happens unless first we dream.',
+                author: 'Carl Sandburg',
+            },
+            {
+                text: 'Well begun is half done.',
+                author: 'Aristotle',
+            },
+            {
+                text: 'Life is a learning experience, only if you learn.',
+                author: 'Yogi Berra',
+            },
+            {
+                text: 'Self-complacency is fatal to progress.',
+                author: 'Margaret Sangster',
+            },
+            {
+                text: 'Peace comes from within. Do not seek it without.',
+                author: 'Buddha',
+            },
+            {
+                text: 'What you give is what you get.',
+                author: 'Byron Pulsifer',
+            },
+            {
+                text: 'We can only learn to love by loving.',
+                author: 'Iris Murdoch',
+            },
+            {
+                text: 'Life is change. Growth is optional. Choose wisely.',
+                author: 'Karen Clark',
+            },
+            {
+                text: "You'll see it when you believe it.",
+                author: 'Wayne Dyer',
+            },
+            {
+                text: 'Today is the tomorrow we worried about yesterday.',
+                author: null,
+            },
+            {
+                text: "It's easier to see the mistakes on someone else's paper.",
+                author: null,
+            },
+            {
+                text: 'Every man dies. Not every man really lives.',
+                author: null,
+            },
+            {
+                text: 'To lead people walk behind them.',
+                author: 'Lao Tzu',
+            },
+            {
+                text: 'Having nothing, nothing can he lose.',
+                author: 'William Shakespeare',
+            },
+            {
+                text: 'Trouble is only opportunity in work clothes.',
+                author: 'Henry J. Kaiser',
+            },
+            {
+                text: 'A rolling stone gathers no moss.',
+                author: 'Publilius Syrus',
+            },
+            {
+                text: 'Ideas are the beginning points of all fortunes.',
+                author: 'Napoleon Hill',
+            },
+            {
+                text: 'Everything in life is luck.',
+                author: 'Donald Trump',
+            },
+            {
+                text: 'Doing nothing is better than being busy doing nothing.',
+                author: 'Lao Tzu',
+            },
+            {
+                text: 'Trust yourself. You know more than you think you do.',
+                author: 'Benjamin Spock',
+            },
+            {
+                text: 'Study the past, if you would divine the future.',
+                author: 'Confucius',
+            },
+            {
+                text: 'The day is already blessed, find peace within it.',
+                author: null,
+            },
+            {
+                text: 'From error to error one discovers the entire truth.',
+                author: 'Sigmund Freud',
+            },
+            {
+                text: 'Well done is better than well said.',
+                author: 'Benjamin Franklin',
+            },
+            {
+                text: 'Bite off more than you can chew, then chew it.',
+                author: 'Ella Williams',
+            },
+            {
+                text: 'Work out your own salvation. Do not depend on others.',
+                author: 'Buddha',
+            },
+            {
+                text: 'One today is worth two tomorrows.',
+                author: 'Benjamin Franklin',
+            },
+            {
+                text: 'Once you choose hope, anythings possible.',
+                author: 'Christopher Reeve',
+            },
+            {
+                text: 'God always takes the simplest way.',
+                author: 'Albert Einstein',
+            },
+            {
+                text: 'One fails forward toward success.',
+                author: 'Charles Kettering',
+            },
+            {
+                text: 'From small beginnings come great things.',
+                author: null,
+            },
+            {
+                text: 'Learning is a treasure that will follow its owner everywhere',
+                author: 'Chinese proverb',
+            },
+            {
+                text: 'Be as you wish to seem.',
+                author: 'Socrates',
+            },
+            {
+                text: 'The world is always in movement.',
+                author: 'V. Naipaul',
+            },
+            {
+                text: 'Never mistake activity for achievement.',
+                author: 'John Wooden',
+            },
+            {
+                text: 'What worries you masters you.',
+                author: 'Haddon Robinson',
+            },
+            {
+                text: 'One faces the future with ones past.',
+                author: 'Pearl Buck',
+            },
+            {
+                text: 'Goals are the fuel in the furnace of achievement.',
+                author: 'Brian Tracy',
+            },
+            {
+                text: 'Who sows virtue reaps honour.',
+                author: 'Leonardo da Vinci',
+            },
+            {
+                text: 'Be kind whenever possible. It is always possible.',
+                author: 'Dalai Lama',
+            },
+            {
+                text: "Talk doesn't cook rice.",
+                author: 'Chinese proverb',
+            },
+            {
+                text: 'He is able who thinks he is able.',
+                author: 'Buddha',
+            },
+            {
+                text: 'A goal without a plan is just a wish.',
+                author: 'Larry Elder',
+            },
+            {
+                text: 'To succeed, we must first believe that we can.',
+                author: 'Michael Korda',
+            },
+            {
+                text: 'Learn from yesterday, live for today, hope for tomorrow.',
+                author: 'Albert Einstein',
+            },
+            {
+                text: 'A weed is no more than a flower in disguise.',
+                author: 'James Lowell',
+            },
+            {
+                text: 'Do, or do not. There is no try.',
+                author: 'Yoda',
+            },
+            {
+                text: 'All serious daring starts from within.',
+                author: 'Harriet Beecher Stowe',
+            },
+            {
+                text: 'The best teacher is experience learned from failures.',
+                author: 'Byron Pulsifer',
+            },
+            {
+                text: 'Think how hard physics would be if particles could think.',
+                author: 'Murray Gell-Mann',
+            },
+            {
+                text: "Love is the flower you've got to let grow.",
+                author: 'John Lennon',
+            },
+            {
+                text: "Don't wait. The time will never be just right.",
+                author: 'Napoleon Hill',
+            },
+            {
+                text: 'Time is the wisest counsellor of all.',
+                author: 'Pericles',
+            },
+            {
+                text: 'You give before you get.',
+                author: 'Napoleon Hill',
+            },
+            {
+                text: 'Wisdom begins in wonder.',
+                author: 'Socrates',
+            },
+            {
+                text: 'Without courage, wisdom bears no fruit.',
+                author: 'Baltasar Gracian',
+            },
+            {
+                text: 'Change in all things is sweet.',
+                author: 'Aristotle',
+            },
+            {
+                text: 'What you fear is that which requires action to overcome.',
+                author: 'Byron Pulsifer',
+            },
+            {
+                text: 'When performance exceeds ambition, the overlap is called success.',
+                author: 'Cullen Hightower',
+            },
+            {
+                text: 'When deeds speak, words are nothing.',
+                author: 'African proverb',
+            },
+            {
+                text: 'Real magic in relationships means an absence of judgement of others.',
+                author: 'Wayne Dyer',
+            },
+            {
+                text: 'I never think of the future. It comes soon enough.',
+                author: 'Albert Einstein',
+            },
+            {
+                text: 'Skill to do comes of doing.',
+                author: 'Ralph Emerson',
+            },
+            {
+                text: 'Wisdom is the supreme part of happiness.',
+                author: 'Sophocles',
+            },
+            {
+                text: 'I believe that every person is born with talent.',
+                author: 'Maya Angelou',
+            },
+            {
+                text: 'Important principles may, and must, be inflexible.',
+                author: 'Abraham Lincoln',
+            },
+            {
+                text: 'The undertaking of a new action brings new strength.',
+                author: 'Richard Evans',
+            },
+            {
+                text: 'The years teach much which the days never know.',
+                author: 'Ralph Emerson',
+            },
+            {
+                text: 'Our distrust is very expensive.',
+                author: 'Ralph Emerson',
+            },
+            {
+                text: 'All know the way; few actually walk it.',
+                author: 'Bodhidharma',
+            },
+            {
+                text: 'Great talent finds happiness in execution.',
+                author: 'Johann Wolfgang von Goethe',
+            },
+            {
+                text: 'Faith in oneself is the best and safest course.',
+                author: 'Michelangelo',
+            },
+            {
+                text: 'Courage is going from failure to failure without losing enthusiasm.',
+                author: 'Winston Churchill',
+            },
+            {
+                text: 'The two most powerful warriors are patience and time.',
+                author: 'Leo Tolstoy',
+            },
+            {
+                text: 'Anticipate the difficult by managing the easy.',
+                author: 'Lao Tzu',
+            },
+            {
+                text: 'Those who are free of resentful thoughts surely find peace.',
+                author: 'Buddha',
+            },
+            {
+                text: 'A short saying often contains much wisdom.',
+                author: 'Sophocles',
+            },
+            {
+                text: 'It takes both sunshine and rain to make a rainbow.',
+                author: null,
+            },
+            {
+                text: 'A beautiful thing is never perfect.',
+                author: null,
+            },
+            {
+                text: 'Only do what your heart tells you.',
+                author: 'Princess Diana',
+            },
+            {
+                text: 'Life is movement-we breathe, we eat, we walk, we move!',
+                author: 'John Pierrakos',
+            },
+            {
+                text: 'No one can make you feel inferior without your consent.',
+                author: 'Eleanor Roosevelt',
+            },
+            {
+                text: 'Argue for your limitations, and sure enough theyre yours.',
+                author: 'Richard Bach',
+            },
+            {
+                text: 'Luck is what happens when preparation meets opportunity.',
+                author: 'Seneca',
+            },
+            {
+                text: 'Victory belongs to the most persevering.',
+                author: 'Napoleon Bonaparte',
+            },
+            {
+                text: 'Love all, trust a few, do wrong to none.',
+                author: 'William Shakespeare',
+            },
+            {
+                text: 'In order to win, you must expect to win.',
+                author: 'Richard Bach',
+            },
+            {
+                text: 'A goal is a dream with a deadline.',
+                author: 'Napoleon Hill',
+            },
+            {
+                text: 'You can do it if you believe you can!',
+                author: 'Napoleon Hill',
+            },
+            {
+                text: "Set your goals high, and don't stop till you get there.",
+                author: 'Bo Jackson',
+            },
+            {
+                text: 'Every new day is another chance to change your life.',
+                author: null,
+            },
+            {
+                text: 'Smile, breathe, and go slowly.',
+                author: 'Thich Nhat Hanh',
+            },
+            {
+                text: 'Nobody will believe in you unless you believe in yourself.',
+                author: 'Liberace',
+            },
+            {
+                text: 'Do more than dream: work.',
+                author: 'William Arthur Ward',
+            },
+            {
+                text: 'No man was ever wise by chance.',
+                author: 'Seneca',
+            },
+            {
+                text: 'Some pursue happiness, others create it.',
+                author: null,
+            },
+            {
+                text: 'He that is giddy thinks the world turns round.',
+                author: 'William Shakespeare',
+            },
+            {
+                text: "Don't ruin the present with the ruined past.",
+                author: 'Ellen Gilchrist',
+            },
+            {
+                text: 'Do something wonderful, people may imitate it.',
+                author: 'Albert Schweitzer',
+            },
+            {
+                text: 'We do what we do because we believe.',
+                author: null,
+            },
+            {
+                text: 'Do one thing every day that scares you.',
+                author: 'Eleanor Roosevelt',
+            },
+            {
+                text: 'If you cannot be silent be brilliant and thoughtful.',
+                author: 'Byron Pulsifer',
+            },
+            {
+                text: 'Who looks outside, dreams; who looks inside, awakes.',
+                author: 'Carl Jung',
+            },
+            {
+                text: 'What we think, we become.',
+                author: 'Buddha',
+            },
+            {
+                text: 'The shortest answer is doing.',
+                author: 'Lord Herbert',
+            },
+            {
+                text: 'All our knowledge has its origins in our perceptions.',
+                author: 'Leonardo da Vinci',
+            },
+            {
+                text: 'The harder you fall, the higher you bounce.',
+                author: null,
+            },
+            {
+                text: 'Trusting our intuition often saves us from disaster.',
+                author: 'Anne Wilson Schaef',
+            },
+            {
+                text: 'Truth is powerful and it prevails.',
+                author: 'Sojourner Truth',
+            },
+            {
+                text: 'Light tomorrow with today!',
+                author: 'Elizabeth Browning',
+            },
+            {
+                text: 'Silence is a fence around wisdom.',
+                author: 'German proverb',
+            },
+            {
+                text: 'Society develops wit, but its contemplation alone forms genius.',
+                author: 'Madame de Stael',
+            },
+            {
+                text: 'The simplest things are often the truest.',
+                author: 'Richard Bach',
+            },
+            {
+                text: 'Everyone smiles in the same language.',
+                author: null,
+            },
+            {
+                text: 'Yesterday I dared to struggle. Today I dare to win.',
+                author: 'Bernadette Devlin',
+            },
+            {
+                text: 'No alibi will save you from accepting the responsibility.',
+                author: 'Napoleon Hill',
+            },
+            {
+                text: 'If you can dream it, you can do it.',
+                author: 'Walt Disney',
+            },
+            {
+                text: 'It is better to travel well than to arrive.',
+                author: 'Buddha',
+            },
+            {
+                text: "Life shrinks or expands in proportion to one's courage.",
+                author: 'Anais Nin',
+            },
+            {
+                text: 'You have to believe in yourself.',
+                author: 'Sun Tzu',
+            },
+            {
+                text: 'Our intention creates our reality.',
+                author: 'Wayne Dyer',
+            },
+            {
+                text: 'Silence is a true friend who never betrays.',
+                author: 'Confucius',
+            },
+            {
+                text: 'Character develops itself in the stream of life.',
+                author: 'Johann Wolfgang von Goethe',
+            },
+            {
+                text: 'From little acorns mighty oaks do grow.',
+                author: 'American proverb',
+            },
+            {
+                text: "You can't stop the waves, but you can learn to surf.",
+                author: 'Jon Kabat-Zinn',
+            },
+            {
+                text: 'Reality does not conform to the ideal, but confirms it.',
+                author: 'Gustave Flaubert',
+            },
+            {
+                text: 'Speak low, if you speak love.',
+                author: 'William Shakespeare',
+            },
+            {
+                text: 'A really great talent finds its happiness in execution.',
+                author: 'Johann Wolfgang von Goethe',
+            },
+            {
+                text: 'Reality leaves a lot to the imagination.',
+                author: 'John Lennon',
+            },
+            {
+                text: 'The greatest remedy for anger is delay.',
+                author: 'Seneca',
+            },
+            {
+                text: 'Growth itself contains the germ of happiness.',
+                author: 'Pearl Buck',
+            },
+            {
+                text: "You can do what's reasonable or you can decide what's possible.",
+                author: null,
+            },
+        ];
+
+        /* ------------------------------------------
+           2. DOM ELEMENTS & APPLICATION STATE
+           ------------------------------------------ */
+        const quoteContainer = document.getElementById('quote-container');
+        const quoteContentBox = document.getElementById('quote-content-box');
+        const quoteText = document.getElementById('quote');
+        const authorText = document.getElementById('author');
+        const authorPillBtn = document.getElementById('author-pill-btn');
+        const XBtn = document.getElementById('X');
+        const newQuoteBtn = document.getElementById('new-quote');
+        const prevQuoteBtn = document.getElementById('prev-quote-btn');
+        const copyQuoteBtn = document.getElementById('copy-quote-btn');
+        const copyIcon = document.getElementById('copy-icon');
+        const speakQuoteBtn = document.getElementById('speak-quote-btn');
+        const favoriteQuoteBtn = document.getElementById('favorite-quote-btn');
+        const favoriteIcon = document.getElementById('favorite-icon');
+        const shuffleIcon = document.getElementById('shuffle-icon');
+
+        const quoteLengthBadge = document.getElementById('quote-length-badge');
+        const quoteCategoryTag = document.getElementById('quote-category-tag');
+        const quoteCounterBadge = document.getElementById('quote-counter-badge');
+        const authorFilterSelect = document.getElementById('author-filter-select');
+        const clearFilterBtn = document.getElementById('clear-filter-btn');
+        const activeFilterLabel = document.getElementById('active-filter-label');
+
+        // Favorites Drawer Elements
+        const openFavoritesBtn = document.getElementById('open-favorites-btn');
+        const closeFavoritesBtn = document.getElementById('close-favorites-btn');
+        const favoritesDrawer = document.getElementById('favorites-drawer');
+        const favoritesBackdrop = document.getElementById('favorites-backdrop');
+        const favoritesList = document.getElementById('favorites-list');
+        const favoritesCountBadge = document.getElementById('favorites-count-badge');
+        const drawerFooterCount = document.getElementById('drawer-footer-count');
+        const clearAllFavoritesBtn = document.getElementById('clear-all-favorites-btn');
+
+        // Toast Elements
+        const toastNotification = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+
+        // State Management
+        let quoteHistory = [];
+        let historyIndex = -1;
+        let currentQuote = null;
+        let selectedAuthorFilter = 'ALL';
+        let favorites = [];
+        let toastTimeout = null;
+        let isTransitioning = false;
+
+        /* ------------------------------------------
+           3. INITIALIZATION & LOCAL STORAGE
+           ------------------------------------------ */
+        function initApp() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('lumina_quote_theme') || 'dark';
+            applyTheme(savedTheme);
+
+            // Load saved favorite quotes
+            try {
+                const storedFavs = localStorage.getItem('lumina_saved_quotes');
+                if (storedFavs) {
+                    favorites = JSON.parse(storedFavs);
+                }
+            } catch (e) {
+                favorites = [];
+            }
+
+            populateAuthorDropdown();
+            updateFavoritesUI();
+            newQuote();
+        }
+
+        /* ------------------------------------------
+           4. THEME MANAGEMENT (Dark / Light / Sepia)
+           ------------------------------------------ */
+        function applyTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('lumina_quote_theme', themeName);
+
+            document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+                const isMatch = btn.getAttribute('data-theme-btn') === themeName;
+                if (isMatch) {
+                    btn.style.backgroundColor = 'var(--accent)';
+                    btn.style.color = '#ffffff';
+                } else {
+                    btn.style.backgroundColor = 'transparent';
+                    btn.style.color = 'var(--text-secondary)';
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyTheme(btn.getAttribute('data-theme-btn'));
+            });
+        });
+
+        /* ------------------------------------------
+           5. AUTHOR FILTERING & CATEGORIZATION
+           ------------------------------------------ */
+        function populateAuthorDropdown() {
+            const authorCounts = {};
+            localQuotes.forEach(q => {
+                const name = q.author ? q.author : 'Unknown';
+                authorCounts[name] = (authorCounts[name] || 0) + 1;
+            });
+
+            const sortedAuthors = Object.keys(authorCounts).sort((a, b) => a.localeCompare(b));
+            sortedAuthors.forEach(author => {
+                const option = document.createElement('option');
+                option.value = author;
+                option.textContent = `${author} (${authorCounts[author]})`;
+                authorFilterSelect.appendChild(option);
+            });
+        }
+
+        function getFilteredQuotesPool() {
+            if (selectedAuthorFilter === 'ALL') {
+                return localQuotes;
+            }
+            return localQuotes.filter(q => {
+                const normalizedAuthor = q.author ? q.author : 'Unknown';
+                return normalizedAuthor === selectedAuthorFilter;
+            });
+        }
+
+        function setAuthorFilter(authorName) {
+            selectedAuthorFilter = authorName;
+            authorFilterSelect.value = authorName;
+
+            const pool = getFilteredQuotesPool();
+            if (authorName === 'ALL') {
+                clearFilterBtn.classList.add('hidden');
+                clearFilterBtn.classList.remove('inline-flex');
+                quoteCounterBadge.textContent = `${localQuotes.length} Classic Quotes`;
+            } else {
+                clearFilterBtn.classList.remove('hidden');
+                clearFilterBtn.classList.add('inline-flex');
+                activeFilterLabel.textContent = authorName;
+                quoteCounterBadge.textContent = `${pool.length} by ${authorName}`;
+            }
+
+            newQuote();
+        }
+
+        authorFilterSelect.addEventListener('change', (e) => {
+            setAuthorFilter(e.target.value);
+        });
+
+        clearFilterBtn.addEventListener('click', () => {
+            setAuthorFilter('ALL');
+        });
+
+        authorPillBtn.addEventListener('click', () => {
+            if (!currentQuote) return;
+            const authorName = currentQuote.author ? currentQuote.author : 'Unknown';
+            if (selectedAuthorFilter === authorName) {
+                setAuthorFilter('ALL');
+                showToast('Showing all authors', 'fa-layer-group');
+            } else {
+                setAuthorFilter(authorName);
+                showToast(`Filtered by ${authorName}`, 'fa-filter');
+            }
+        });
+
+        // Subtle editorial tag inference based on keywords
+        function inferEditorialCategory(text) {
+            const lower = text.toLowerCase();
+            if (lower.includes('love') || lower.includes('heart') || lower.includes('kind')) return 'Love & Empathy';
+            if (lower.includes('wisdom') || lower.includes('know') || lower.includes('learn') || lower.includes('study')) return 'Wisdom & Learning';
+            if (lower.includes('goal') || lower.includes('work') || lower.includes('succeed') || lower.includes('win')) return 'Ambition & Mastery';
+            if (lower.includes('peace') || lower.includes('silence') || lower.includes('smile') || lower.includes('breathe')) return 'Mindfulness & Peace';
+            if (lower.includes('courage') || lower.includes('fear') || lower.includes('dare') || lower.includes('trust')) return 'Courage & Grit';
+            if (lower.includes('time') || lower.includes('future') || lower.includes('today') || lower.includes('yesterday')) return 'Time & Perspective';
+            return 'Timeless Reflection';
+        }
+
+        /* ------------------------------------------
+           6. CORE QUOTE GENERATION & HISTORY
+           ------------------------------------------ */
+        function renderQuoteObject(quote, animate = true) {
+            if (!quote) return;
+            currentQuote = quote;
+
+            // Stop active speech if speaking
+            stopSpeech();
+
+            const updateDOM = () => {
+                // Check if author field is blank and replace with 'Unknown'
+                const resolvedAuthor = !quote.author ? 'Unknown' : quote.author;
+                authorText.textContent = resolvedAuthor;
+
+                // Check quote length to determine styling (Preserves original > 120 check)
+                if (quote.text.length > 120) {
+                    quoteText.classList.add('long-quote');
+                } else {
+                    quoteText.classList.remove('long-quote');
+                }
+
+                quoteText.textContent = quote.text;
+
+                // Update editorial metadata badges
+                quoteCategoryTag.textContent = inferEditorialCategory(quote.text);
+                const wordCount = quote.text.trim().split(/\s+/).length;
+                quoteLengthBadge.textContent = `${wordCount} words`;
+
+                // Update Favorite button state & Previous button state
+                syncFavoriteIconState();
+                prevQuoteBtn.disabled = historyIndex <= 0;
+            };
+
+            if (!animate) {
+                updateDOM();
+                return;
+            }
+
+            isTransitioning = true;
+            quoteContentBox.classList.remove('quote-fade-in');
+            quoteContentBox.classList.add('quote-fade-out');
+
+            // Rotate sparkle icon slightly for tactile feedback
+            shuffleIcon.style.transform = 'rotate(180deg) scale(1.15)';
+            setTimeout(() => {
+                shuffleIcon.style.transform = 'rotate(0deg) scale(1)';
+            }, 300);
+
+            setTimeout(() => {
+                updateDOM();
+                quoteContentBox.classList.remove('quote-fade-out');
+                quoteContentBox.classList.add('quote-fade-in');
+                isTransitioning = false;
+            }, 220);
+        }
+
+        // Show New Quote (Preserves original newQuote function name)
+        function newQuote() {
+            if (isTransitioning) return;
+
+            const pool = getFilteredQuotesPool();
+            if (pool.length === 0) return;
+
+            // Pick a random quote, avoiding immediate repeat when pool > 1
+            let nextQuote = pool[Math.floor(Math.random() * pool.length)];
+            if (pool.length > 1 && currentQuote && nextQuote.text === currentQuote.text) {
+                const alternatives = pool.filter(q => q.text !== currentQuote.text);
+                nextQuote = alternatives[Math.floor(Math.random() * alternatives.length)];
+            }
+
+            // Push to browsing history
+            if (historyIndex < quoteHistory.length - 1) {
+                quoteHistory = quoteHistory.slice(0, historyIndex + 1);
+            }
+            quoteHistory.push(nextQuote);
+            historyIndex = quoteHistory.length - 1;
+
+            renderQuoteObject(nextQuote, quoteHistory.length > 1);
+        }
+
+        function previousQuote() {
+            if (historyIndex > 0 && !isTransitioning) {
+                historyIndex--;
+                renderQuoteObject(quoteHistory[historyIndex], true);
+            }
+        }
+
+        /* ------------------------------------------
+           7. SHARE ON X / COPY / TEXT-TO-SPEECH
+           ------------------------------------------ */
+        // Tweet Quote (Preserves original tweetQuote function with proper URL encoding)
+        function tweetQuote() {
+            const textToShare = `"${quoteText.textContent}" — ${authorText.textContent}`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
+            window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // Copy Quote to Clipboard (Uses execCommand fallback for iframe safety)
+        function copyQuoteText(customText) {
+            const formatted = customText || `"${quoteText.textContent}" — ${authorText.textContent}`;
+            const textArea = document.createElement('textarea');
+            textArea.value = formatted;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                copyIcon.className = 'fas fa-check text-emerald-400';
+                showToast('Copied to clipboard!', 'fa-circle-check');
+                setTimeout(() => {
+                    copyIcon.className = 'far fa-copy';
+                }, 1800);
+            } catch (err) {
+                showToast('Unable to copy quote', 'fa-circle-exclamation');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Web Speech API (Listen to Quote)
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            speakQuoteBtn.classList.remove('speaking-active');
+        }
+
+        function toggleSpeakQuote() {
+            if (!('speechSynthesis' in window)) {
+                showToast('Speech synthesis not supported in this browser', 'fa-circle-exclamation');
+                return;
+            }
+
+            if (window.speechSynthesis.speaking) {
+                stopSpeech();
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(`${quoteText.textContent}. By ${authorText.textContent}.`);
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+
+            utterance.onstart = () => {
+                speakQuoteBtn.classList.add('speaking-active');
+            };
+            utterance.onend = () => {
+                speakQuoteBtn.classList.remove('speaking-active');
+            };
+            utterance.onerror = () => {
+                speakQuoteBtn.classList.remove('speaking-active');
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /* ------------------------------------------
+           8. FAVORITES MANAGEMENT & DRAWER
+           ------------------------------------------ */
+        function isQuoteFavorited(quote) {
+            if (!quote) return false;
+            return favorites.some(fav => fav.text === quote.text);
+        }
+
+        function syncFavoriteIconState() {
+            if (isQuoteFavorited(currentQuote)) {
+                favoriteIcon.className = 'fas fa-heart text-rose-500';
+            } else {
+                favoriteIcon.className = 'far fa-heart';
+            }
+        }
+
+        function toggleFavoriteCurrentQuote() {
+            if (!currentQuote) return;
+
+            const normalizedAuthor = currentQuote.author ? currentQuote.author : 'Unknown';
+            const existsIndex = favorites.findIndex(fav => fav.text === currentQuote.text);
+
+            favoriteIcon.classList.remove('heart-animate');
+            void favoriteIcon.offsetWidth; // trigger reflow
+            favoriteIcon.classList.add('heart-animate');
+
+            if (existsIndex > -1) {
+                favorites.splice(existsIndex, 1);
+                showToast('Removed from Saved Quotes', 'fa-heart-crack');
+            } else {
+                favorites.unshift({
+                    text: currentQuote.text,
+                    author: normalizedAuthor,
+                    savedAt: Date.now()
+                });
+                showToast('Saved to Favorites!', 'fa-heart');
+            }
+
+            saveFavoritesToStorage();
+            syncFavoriteIconState();
+            updateFavoritesUI();
+        }
+
+        function saveFavoritesToStorage() {
+            try {
+                localStorage.setItem('lumina_saved_quotes', JSON.stringify(favorites));
+            } catch (e) {
+                // Ignore storage quota errors in restricted frames
+            }
+        }
+
+        function updateFavoritesUI() {
+            favoritesCountBadge.textContent = favorites.length;
+            drawerFooterCount.textContent = `${favorites.length} saved ${favorites.length === 1 ? 'quote' : 'quotes'}`;
+
+            if (favorites.length > 0) {
+                clearAllFavoritesBtn.classList.remove('hidden');
+            } else {
+                clearAllFavoritesBtn.classList.add('hidden');
+            }
+
+            favoritesList.innerHTML = '';
+
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = `
+                    <div class="h-64 flex flex-col items-center justify-center text-center px-4" style="color: var(--text-muted);">
+                        <div class="w-12 h-12 rounded-2xl glass-btn flex items-center justify-center mb-3 text-lg">
+                            <i class="far fa-heart"></i>
+                        </div>
+                        <p class="font-semibold text-sm" style="color: var(--text-primary);">No saved quotes yet</p>
+                        <p class="text-xs mt-1">Click the heart icon on any quote or press <kbd class="px-1.5 py-0.5 rounded glass-btn font-mono">F</kbd> to build your personal collection.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            favorites.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-2xl glass-btn flex flex-col gap-3 transition-all';
+                card.innerHTML = `
+                    <p class="font-serif text-sm sm:text-base leading-relaxed" style="color: var(--text-primary);">“${item.text}”</p>
+                    <div class="flex items-center justify-between pt-1">
+                        <span class="text-xs font-semibold" style="color: var(--accent);">— ${item.author}</span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" data-copy-fav="${index}" class="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-xs" title="Copy Quote">
+                                <i class="far fa-copy"></i>
+                            </button>
+                            <button type="button" data-load-fav="${index}" class="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-xs" title="Display on Stage">
+                                <i class="fas fa-arrow-up-right-from-square"></i>
+                            </button>
+                            <button type="button" data-remove-fav="${index}" class="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-xs text-rose-400 hover:text-rose-300" title="Remove">
+                                <i class="fas fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                favoritesList.appendChild(card);
+            });
+
+            // Attach item listeners
+            favoritesList.querySelectorAll('[data-copy-fav]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = Number(btn.getAttribute('data-copy-fav'));
+                    const fav = favorites[idx];
+                    if (fav) copyQuoteText(`"${fav.text}" — ${fav.author}`);
+                });
+            });
+
+            favoritesList.querySelectorAll('[data-load-fav]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = Number(btn.getAttribute('data-load-fav'));
+                    const fav = favorites[idx];
+                    if (fav) {
+                        quoteHistory.push(fav);
+                        historyIndex = quoteHistory.length - 1;
+                        renderQuoteObject(fav, true);
+                        closeDrawer();
+                    }
+                });
+            });
+
+            favoritesList.querySelectorAll('[data-remove-fav]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = Number(btn.getAttribute('data-remove-fav'));
+                    favorites.splice(idx, 1);
+                    saveFavoritesToStorage();
+                    syncFavoriteIconState();
+                    updateFavoritesUI();
+                });
+            });
+        }
+
+        function openDrawer() {
+            favoritesBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+            favoritesDrawer.classList.remove('translate-x-full');
+        }
+
+        function closeDrawer() {
+            favoritesBackdrop.classList.add('opacity-0', 'pointer-events-none');
+            favoritesDrawer.classList.add('translate-x-full');
+        }
+
+        openFavoritesBtn.addEventListener('click', openDrawer);
+        closeFavoritesBtn.addEventListener('click', closeDrawer);
+        favoritesBackdrop.addEventListener('click', closeDrawer);
+
+        clearAllFavoritesBtn.addEventListener('click', () => {
+            favorites = [];
+            saveFavoritesToStorage();
+            syncFavoriteIconState();
+            updateFavoritesUI();
+            showToast('Cleared all saved quotes', 'fa-trash-can');
+        });
+
+        /* ------------------------------------------
+           9. TOAST NOTIFICATION HELPER
+           ------------------------------------------ */
+        function showToast(message, iconClass = 'fa-circle-check') {
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastMessage.textContent = message;
+            toastIcon.className = `fas ${iconClass} text-indigo-400`;
+            toastNotification.classList.remove('opacity-0', 'translate-y-3');
+            toastNotification.classList.add('opacity-100', 'translate-y-0');
+
+            toastTimeout = setTimeout(() => {
+                toastNotification.classList.remove('opacity-100', 'translate-y-0');
+                toastNotification.classList.add('opacity-0', 'translate-y-3');
+            }, 2200);
+        }
+
+        /* ------------------------------------------
+           10. EVENT LISTENERS & KEYBOARD SHORTCUTS
+           ------------------------------------------ */
+        newQuoteBtn.addEventListener('click', newQuote);
+        prevQuoteBtn.addEventListener('click', previousQuote);
+        XBtn.addEventListener('click', tweetQuote);
+        copyQuoteBtn.addEventListener('click', () => copyQuoteText());
+        speakQuoteBtn.addEventListener('click', toggleSpeakQuote);
+        favoriteQuoteBtn.addEventListener('click', toggleFavoriteCurrentQuote);
+
+        // Global Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Do not trigger shortcuts if user is focused on select/input
+            const activeTag = document.activeElement ? document.activeElement.tagName : '';
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                newQuote();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                previousQuote();
+            } else if (e.key === 'c' || e.key === 'C') {
+                if (!e.metaKey && !e.ctrlKey) {
+                    e.preventDefault();
+                    copyQuoteText();
+                }
+            } else if (e.key === 'f' || e.key === 'F') {
+                if (!e.metaKey && !e.ctrlKey) {
+                    e.preventDefault();
+                    toggleFavoriteCurrentQuote();
+                }
+            } else if (e.key === 's' || e.key === 'S') {
+                if (!e.metaKey && !e.ctrlKey) {
+                    e.preventDefault();
+                    toggleSpeakQuote();
+                }
+            } else if (e.code === 'Escape') {
+                closeDrawer();
+            }
+        });
+
+        // Boot the application on load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
